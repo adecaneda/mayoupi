@@ -7,11 +7,12 @@ interface IRepository {
     /**
      * Returns a row from the database by its table name and id
      *
-     * @param $id string Identifier attribute name
+     * @param $id string Identifier attribute value
+     * @param $field string Identifier attribute name (optional)
      *
      * @return IEntity
      */
-    public function retrieve($id);
+    public function retrieve($id, $field = null);
 
     /**
      * Retrieve all entities of a type.
@@ -28,4 +29,11 @@ interface IRepository {
      * @return IEntity
      */
     public function persist($entity);
+
+    /**
+     * @param $entity
+     *
+     * @return mixed
+     */
+    public function remove($entity);
 }

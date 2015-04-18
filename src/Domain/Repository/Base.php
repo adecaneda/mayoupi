@@ -34,14 +34,22 @@ class Base {
     /**
      * Returns a row from the database by its table name and id
      *
-     * @param $id string Identifier attribute name
+     * @param $id string Identifier attribute value
+     * @param $field string Identifier attribute name (optional)
      *
      * @return IEntity
      */
-    public function retrieve($id)
+    public function retrieve($id, $field = null)
     {
+        $field = $field ?: $this->field;
         $class = "Domain\\Entity\\" . $this->entity;
-        return new $class($this->_retrieve($this->table, $this->field, $id));
+
+        $attrs = $this->_retrieve($this->table, $field, $id);
+        if (!$attrs) {
+            return null;
+        }
+
+        return new $class($attrs);
     }
 
     /**
@@ -58,6 +66,53 @@ class Base {
             $entities[] = new $class($item);
         }
         return $entities;
+    }
+
+    /**
+     * Persists an object (insert or update)
+     *
+     * @param $entity IEntity
+     *
+     * @return IEntity
+     */
+    public function persist($entity)
+    {
+        return $this->_persist($entity, $this->table, $this->field);
+    }
+
+    /**
+     * @param $entity
+     *
+     * @return mixed
+     */
+    public function remove($entity)
+    {
+        $this->_remove($entity, $this->table);
+        $entity = null;
+    }
+
+    /**
+     * Returns a row from the database by its table name and identifier. If there
+     * are several rows with the same value only the first will be returned.
+     *
+     * @param $table string Table name
+     * @param $id string Identifier attribute name
+     * @param $value string Identifier attribute value
+     *
+     * @return array
+     *
+     * @throws \Exception
+     */
+    protected function _retrieve($table, $id, $value)
+    {
+        /* @var $db Database */
+        $db = Registry::getInstance()->db;
+
+        $result = $db->query("SELECT * FROM `$table` WHERE `$id` = '$value'");
+        if (false === $fields = mysql_fetch_assoc($result)) {
+            $fields = array();
+        }
+        return $fields;
     }
 
     /**
@@ -81,41 +136,6 @@ class Base {
             $items[] = $fields;
         }
         return $items;
-    }
-
-    /**
-     * Returns a row from the database by its table name and id
-     *
-     * @param $table string Table name
-     * @param $id string Identifier attribute name
-     * @param $value string Identifier attribute value
-     *
-     * @return array
-     *
-     * @throws \Exception
-     */
-    static protected function _retrieve($table, $id, $value)
-    {
-        /* @var $db Database */
-        $db = Registry::getInstance()->db;
-
-        $result = $db->query("SELECT * FROM `$table` WHERE `$id` = '$value'");
-        if (false === $fields = mysql_fetch_assoc($result)) {
-            throw new \Exception("Unknown entity id '$value'");
-        }
-        return $fields;
-    }
-
-    /**
-     * Persists an object (insert or update)
-     *
-     * @param $entity IEntity
-     *
-     * @return IEntity
-     */
-    public function persist($entity)
-    {
-        return $this->_persist($entity, $this->table, $this->field);
     }
 
     /**
@@ -155,8 +175,32 @@ class Base {
             $query = "INSERT INTO `$table` (" . implode(',', $keys) . ") VALUES (" . implode(',', $values). ")";
             if ($db->query($query)) {
                 $attrs[$idAttr] = (string)mysql_insert_id();
+
+                // Set basicly the id
+                $entity->setAttrs($attrs);
             }
         }
-        return $attrs;
+
+        return $entity;
+    }
+
+    /**
+     * @param $entity IEntity
+     * @param $table string Table name
+     *
+     * @throws \Exception
+     */
+    protected function _remove($entity, $table)
+    {
+        $idAttr = $entity->getIdentifierField();
+        if (!$entity->hasAttr($idAttr)) {
+            throw new \Exception('Trying to remove an entity without id.');
+        }
+
+        /* @var $db Database */
+        $db = Registry::getInstance()->db;
+
+        $query = "DELETE FROM `$table` WHERE `$idAttr` = {$entity->get($idAttr)}";
+        $db->query($query);
     }
 } 

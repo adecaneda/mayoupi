@@ -15,37 +15,26 @@ class User extends Base {
     {
         // lazy loading
         if ($this->avatar === null) {
-            // pre-load raw data
-            if ($this->hasAttr('_avatar') && $this->get('_avatar')) {
-                $this->avatar = new Image($this->get('_avatar'));
-
             // retrieve fresh from repository
-            } else {
-                $this->avatar = Images::get()->retrieve($this->get('id_image'));
-            }
+            $this->avatar = Images::get()->retrieve($this->get('id_image'));
         }
         return $this->avatar;
     }
 
     /**
-     * Gets the value of an (existing) attribute
+     * Returns the attributes of the entity and its related sub-entities.
      *
-     * @param $attr
-     *
-     * @return mixed
-     * @throws \Exception
+     * @return array
      */
-    public function get($attr = null)
+    public function getWithRelations()
     {
-        if ($attr !== null) {
-            return parent::get($attr);
-        }
-
         $attrs = parent::get();
 
         // avatar attrs
-        $attrs['_avatar'] = $this->avatar()->get();
+        $avatar = $this->avatar();
+        $attrs['@avatar'] = $avatar ? $avatar->getWithRelations() : null;
 
         return $attrs;
+
     }
-} 
+}

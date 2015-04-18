@@ -32,6 +32,38 @@ class Base implements IEntity {
     }
 
     /**
+     * Set several attributes at once. A try to modify the entity identifier
+     * will throw an exception.
+     *
+     * @param $attrs
+     *
+     * @throws \Exception
+     */
+    public function setAttrs($attrs)
+    {
+        $idField = $this->getIdentifierField();
+        if ($this->hasAttr($idField)) {
+            $oldId = $this->get($idField);
+            // throw exception on different ids
+            if (array_key_exists($idField, $attrs) && $attrs[$idField] !== $oldId) {
+                throw new \Exception('Trying to modify an existing entity identifier');
+            }
+        }
+
+        $this->attrs = array_merge($attrs, $this->attrs);
+    }
+
+    /**
+     * Returns the attributes of the entity and its related sub-entities.
+     *
+     * @return array
+     */
+    public function getWithRelations()
+    {
+        return $this->get();
+    }
+
+    /**
      * Gets the value of an (existing) attribute
      *
      * @param $attr
@@ -46,12 +78,13 @@ class Base implements IEntity {
             return $this->attrs;
 
         // throw exception if the attr doesn't exist
-        } else if (!array_key_exists($attr, $this->attrs)) {
+        } else if (!$this->hasAttr($attr)) {
             throw new \Exception("Unknown attribute '$attr' in class '" . get_called_class() . "'");
         }
 
         return $this->attrs[$attr];
     }
+
     /**
      * Sets the value of an (existing) attribute
      *
@@ -75,7 +108,7 @@ class Base implements IEntity {
      * @param $attr
      * @return bool
      */
-    protected function hasAttr($attr)
+    public function hasAttr($attr)
     {
         return array_key_exists($attr, $this->attrs);
     }
