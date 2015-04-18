@@ -9,7 +9,7 @@ use Library\Database;
 
 class Base {
 
-    static $instances = [];
+    static protected $instances = [];
 
     protected $field = '';
     protected $table = '';
