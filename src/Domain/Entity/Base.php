@@ -1,0 +1,82 @@
+<?php
+
+namespace Domain\Entity;
+
+use Domain\IEntity;
+
+class Base implements IEntity {
+
+    /**
+     * @var array Stores all object attributes as a pair key-value
+     */
+    protected $attrs;
+
+    /**
+     * Creates an instance of the entity from its values
+     *
+     * @param $attrs array Array with entity attributes
+     */
+    public function __construct ($attrs)
+    {
+        $this->attrs = $attrs;
+    }
+
+    /**
+     * The default field is 'id'.
+     *
+     * @return string
+     */
+    public function getIdentifierField()
+    {
+        return 'id';
+    }
+
+    /**
+     * Gets the value of an (existing) attribute
+     *
+     * @param $attr
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    public function get($attr = null)
+    {
+        // return all fields is no attr is specified
+        if ($attr === null) {
+            return $this->attrs;
+
+        // throw exception if the attr doesn't exist
+        } else if (!array_key_exists($attr, $this->attrs)) {
+            throw new \Exception("Unknown attribute '$attr' in class '" . get_called_class() . "'");
+        }
+
+        return $this->attrs[$attr];
+    }
+    /**
+     * Sets the value of an (existing) attribute
+     *
+     * @param $attr
+     * @param $value
+     *
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function set($attr, $value)
+    {
+        if (!array_key_exists($attr, $this->attrs)) {
+            throw new \Exception("Unknown attribute '$attr' in class '" . get_called_class() . "'");
+        }
+        $this->attrs[$attr] = $value;
+    }
+
+    /**
+     * Returns true if the attribute $attr exists in the entity. Otherwise false.
+     *
+     * @param $attr
+     * @return bool
+     */
+    protected function hasAttr($attr)
+    {
+        return array_key_exists($attr, $this->attrs);
+    }
+}

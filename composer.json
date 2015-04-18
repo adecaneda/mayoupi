@@ -1,0 +1,20 @@
+{
+    "name": "adecaneda/mayoupi",
+    "authors": [
+        {
+            "name": "Alejandro D. Caneda",
+            "email": "adecaneda@gmail.com"
+        }
+    ],
+    "require": {
+        "dannyvankooten/php-router": "dev-master"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "Library\\": "src/library/",
+            "api\\": "src/api/",
+            "Domain\\": "src/Domain/"
+        }
+    }
+}
