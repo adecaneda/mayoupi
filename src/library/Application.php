@@ -81,6 +81,16 @@ class Application {
             'methods' => 'POST'
         )));
 
+        $collection->attachRoute(new Router\Route('/api/auth/logout', array(
+            '_controller' => 'api\AuthController::logout',
+            'methods' => 'GET'
+        )));
+
+        $collection->attachRoute(new Router\Route('/api/auth/logged-in', array(
+            '_controller' => 'api\AuthController::loggedIn',
+            'methods' => 'GET'
+        )));
+
         $collection->attachRoute(new Router\Route('/api/auth/register', array(
             '_controller' => 'api\AuthController::register',
             'methods' => 'POST'

@@ -156,6 +156,11 @@ class Base {
 
         $attrs = $entity->get();
 
+        // special attribute 'password'
+        if ($entity->hasAttr('password')) {
+            $attrs['password'] = $entity->get('password');
+        }
+
         // Update
         if (array_key_exists($idAttr, $attrs)) {
             $parts = array();

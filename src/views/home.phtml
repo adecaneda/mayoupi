@@ -19,17 +19,22 @@
 <body ng-app="app">
 
 <!-- NAVIGATION -->
-<nav class="navbar navbar-inverse" role="navigation">
-    <ul class="nav navbar-nav">
-        <li><a ui-sref="home">Home</a></li>
-    </ul>
-    <ul class="nav navbar-nav">
-        <li><a ui-sref="admin">Admin</a></li>
-    </ul>
-    <ul class="nav navbar-nav">
-        <li><a ui-sref="auth">Auth</a></li>
-    </ul>
-</nav>
+<div data-ng-controller="HeaderController">
+    <nav class="navbar navbar-inverse" role="navigation">
+        <ul class="nav navbar-nav">
+            <li><a ui-sref="home">Home</a></li>
+        </ul>
+        <ul class="nav navbar-nav">
+            <li><a ui-sref="admin" data-ng-if="authentication.user">Admin</a></li>
+        </ul>
+        <ul class="nav navbar-nav pull-right" data-ng-hide="authentication.user">
+            <li><a ui-sref="signin">Sign in</a></li>
+        </ul>
+        <ul class="nav navbar-nav pull-right" data-ng-if="authentication.user">
+            <li><a ui-sref="signout">Sign out</a></li>
+        </ul>
+    </nav>
+</div>
 
 <!-- MAIN CONTENT -->
 <div class="container">

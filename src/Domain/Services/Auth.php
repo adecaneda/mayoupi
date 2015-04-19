@@ -24,9 +24,76 @@ class Auth {
     static public function authenticate($strategy, $params)
     {
         if ($strategy === 'email') {
-            return self::authenticateByEmail($params['email'], $params['password']);
+            $user = self::authenticateByEmail($params['email'], $params['password']);
+        } else {
+            $user = null;
+        }
+
+        self::storeInSession($user);
+
+        // update last login date
+        $user->updateLastSignIn();
+        Users::get()->persist($user);
+
+        return $user;
+    }
+
+    /**
+     */
+    static public function unauthenticate()
+    {
+        $_SESSION['user'] = null;
+    }
+
+    static public function register($params)
+    {
+        // if a user is authenticated, fail
+        if (self::authenticated()) {
+            return null;
+        }
+
+        // if a user with the same email exists, fail
+        if ($oldUser = Users::get()->retrieve($params['email'], 'email')) {
+            return null;
+        }
+
+        //@todo google plus id, instagram id
+        $user = new User($params);
+
+
+        $user->updateLastSignIn();
+        $user->defineRole('user');
+
+        // save in the database
+        Users::get()->persist($user);
+
+        // store in session
+        self::storeInSession($user);
+
+        return $user;
+    }
+
+    /**
+     * Returns the current logged in user.
+     *
+     * @return User
+     */
+    static public function authenticated()
+    {
+        if (isset($_SESSION['user'])) {
+            return Users::get()->retrieve($_SESSION['user']);
         }
         return null;
+    }
+
+    static public function isAdmin()
+    {
+        if ($user = self::authenticated()) {
+            if ($user->get('role') === 'admin') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -46,5 +113,18 @@ class Auth {
         }
 
         return $user;
+    }
+
+    /**
+     * @param null $user
+     */
+    static protected function storeInSession($user = null)
+    {
+        if ($user) {
+            $_SESSION['user'] = $user->get('id');
+        } else {
+            $_SESSION['user'] = null;
+        }
+
     }
 } 

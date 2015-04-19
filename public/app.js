@@ -1,33 +1,182 @@
+// create the module and name it app
+var app = angular.module('app', ['ui.router']);
 
-// create the module and name it mayoupiApp
-var mayoupiApp = angular.module('mayoupiApp', ['ui.router']);
+
+// Authentication service for user variables
+app.service('Authentication', ['$window', function($window) {
+    var auth = {
+        user: $window.user
+    };
+    return auth;
+}]);
+
+// Setting up route
+app.config(['$stateProvider',
+    function($stateProvider) {
+
+        // Users state routing
+        $stateProvider.
+//            state('profile', {
+//                url: '/settings/profile',
+//                templateUrl: 'users/views/settings/edit-profile.client.view.html'
+//            }).
+//            state('accounts', {
+//                url: '/settings/accounts',
+//                templateUrl: 'users/views/settings/social-accounts.client.view.html'
+//            }).
+            state('signup', {
+                url: '/signup',
+                templateUrl: 'users/views/authentication/signup.html'
+            }).
+            state('signin', {
+                url: '/signin',
+                templateUrl: 'users/views/authentication/signin.html'
+            }).
+            state('signout', {
+                url: '/signout',
+                templateUrl: 'users/views/authentication/signout.html'
+            });
+    }
+]);
+
+// Header controller
+app.controller('HeaderController', ['$scope', 'Authentication',
+    function($scope, Authentication) {
+        $scope.authentication = Authentication;
+}]);
+
+app.controller('AuthenticationController', ['$scope', '$http', '$location', 'Authentication',
+    function($scope, $http, $location, Authentication) {
+        $scope.authentication = Authentication;
+
+        // If user is signed in then redirect back home
+        if ($scope.authentication.user) $location.path('/');
+
+        $scope.signup = function() {
+            // form validation
+            if (!$scope.formData.name
+                || !$scope.formData.email
+                || !$scope.formData.password
+                || !$scope.formData.tac_accepted
+            ) {
+                $scope.error = 'All fields are mandatory';
+                return;
+            }
+
+            // make the request if form is validated
+            $http({
+                method: 'POST',
+                url: 'api/auth/register',
+                data:  'name=' + $scope.formData.name +
+                        '&email=' + $scope.formData.email +
+                        '&tac_accepted=' + $scope.formData.tac_accepted +
+                        '&password=' + $scope.formData.password,
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            })
+            .success(function(response) {
+                if (response.user) {
+                    // If successful we assign the response to the global user model
+                    $scope.authentication.user = response.user;
+
+                    // And redirect to the index page
+                    $location.path('/');
+                } else {
+                    $scope.error = 'Authentication failed!';
+                }
+            }).error(function(response) {
+                $scope.error = response.message;
+            });
+        };
+
+        $scope.signin = function() {
+            $http({
+                method: 'POST',
+                url: 'api/auth/login',
+                data:  'email=' + $scope.credentials.email +
+                        '&password=' + $scope.credentials.password,
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+
+            }).success(function(response) {
+                // If successful we assign the response to the global user model
+                if (response.user) {
+                    $scope.authentication.user = response.user;
+
+                    // And redirect to the index page
+                    $location.path('/');
+                } else {
+                    $scope.error = 'Authentication failed!';
+                }
+
+            }).error(function(response) {
+                    $scope.error = response.message;
+                });
+        };
+
+        $scope.signout = function() {
+            $http.get('api/auth/logout')
+                .success(function(/*response*/) {
+                    $scope.authentication.user = null;
+
+                    // And redirect to the index page
+                    $location.path('/signin');
+                });
+        }
+    }
+]);
+
+app.run(function ($rootScope, $state, Authentication) {
+    $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
+        if (toState.authenticate && !Authentication.user){
+            // User isn’t authenticated
+            $state.transitionTo("signin");
+            event.preventDefault();
+
+        } else if (toState.administration
+            && (!Authentication.user || Authentication.user.role != 'admin')
+        ) {
+            // User isn’t admin
+            $state.transitionTo("home");
+            event.preventDefault();
+        }
+    });
+});
+
+
+
+
+
+
+
 
 // configure our routes
-mayoupiApp.config(function($stateProvider, $urlRouterProvider) {
+app.config(function($stateProvider, $urlRouterProvider) {
 
-    $urlRouterProvider.otherwise('/home');
+    // Send to login if the URL was not found
+    $urlRouterProvider.otherwise("/home");
 
     $stateProvider
         // route for the home page
         .state('home', {
             url  : '/home',
             templateUrl : 'partials/home.html'
-        })
+        });
 
+    $stateProvider
         // route for the admin page
         .state('admin', {
             url : '/admin',
-            templateUrl : 'partials/admin.html'
+            templateUrl : 'admin/views/admin.html',
+            administration: true
         })
 
         .state('admin.home', {
             url: '',
-            templateUrl: 'partials/admin-home.html'
+            templateUrl: 'admin/views/admin-home.html'
         })
             // nested list with custom controller
         .state('admin.users', {
             url: '/users',
-            templateUrl: 'partials/admin-users.html',
+            templateUrl: 'admin/views/admin-users.html',
             controller: function($scope, $http) {
                 if (!$scope.users) {
                     $http({method: 'GET', url: './api/users'}).
@@ -43,3 +192,6 @@ mayoupiApp.config(function($stateProvider, $urlRouterProvider) {
             }
         });
 });
+
+
+

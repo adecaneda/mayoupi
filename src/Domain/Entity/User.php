@@ -11,6 +11,15 @@ class User extends Base {
      */
     protected $avatar;
 
+    public function __construct($params)
+    {
+        parent::__construct($params);
+
+        if ($params['password']) {
+            $this->attrs['password'] = $this->encryptPassword($params['password']);
+        }
+    }
+
     public function avatar()
     {
         // lazy loading
@@ -55,6 +64,23 @@ class User extends Base {
         unset($attrs['password']);
 
         return $attrs;
+    }
+
+    /**
+     * Updates the last sign in date
+     */
+    public function updateLastSignIn()
+    {
+        $now = new \DateTime();
+        $this->attrs['last_sign_in'] = $now->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * @param $role
+     */
+    public function defineRole($role)
+    {
+        $this->attrs['role'] = $role;
     }
 
     protected function encryptPassword($password)
