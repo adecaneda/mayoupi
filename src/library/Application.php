@@ -54,13 +54,16 @@ class Application {
      */
     public function run()
     {
+        /** @var $registry Registry */
+        $registry = Registry::getInstance();
+
         /** @var $router Router\Router */
-        $router = Registry::getInstance()->router;
+        $router = $registry->router;
         $router->matchCurrentRequest();
 
         ob_start();
 
-        echo Registry::getInstance()->response;
+        echo $registry->response;
 
         ob_flush();
     }
@@ -77,8 +80,15 @@ class Application {
             'methods' => 'GET'
         )));
 
+        $collection->attachRoute(new Router\Route('/api/', array(
+            //@todo
+            '_controller' => 'api\UsersController::index',
+            'methods' => 'GET'
+        )));
+
+        // catch all other routes to be routed with angular
         $collection->attachRoute(new Router\Route('/', array(
-            '_controller' => 'api\IndexController::index',
+            '_controller' => 'controllers\HomeController::index',
             'methods' => 'GET'
         )));
 

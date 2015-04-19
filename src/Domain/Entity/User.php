@@ -32,7 +32,7 @@ class User extends Base {
 
         // avatar attrs
         $avatar = $this->avatar();
-        $attrs['@avatar'] = $avatar ? $avatar->getWithRelations() : null;
+        $attrs['_avatar'] = $avatar ? $avatar->getWithRelations() : null;
 
         return $attrs;
 

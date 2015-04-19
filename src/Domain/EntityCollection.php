@@ -10,19 +10,23 @@ class EntityCollection extends \ArrayObject {
      * @param $withRelations bool
      * @return array
      */
-    public function getAttrs($withRelations = false)
+    public function getAttrs($withRelations = false, $indexed = true)
     {
         $items = [];
 
         /** @var $entity IEntity */
         foreach ($this as $entity) {
-            $idField = $entity->getIdentifierField();
-
             if ($withRelations) {
-                $items[$entity->get($idField)] = $entity->getWithRelations();
-
+                $item = $entity->getWithRelations();
             } else {
-                $items[$entity->get($idField)] = $entity->get();
+                $item = $entity->get();
+            }
+
+            if ($indexed) {
+                $idField = $entity->getIdentifierField();
+                $items[$entity->get($idField)] = $item;
+            } else {
+                $items[] = $item;
             }
         }
 

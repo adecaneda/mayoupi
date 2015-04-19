@@ -1,0 +1,18 @@
+<div class="row list-group-item list-group-item-info">
+    <div class="col-md-1">ID</div>
+    <div class="col-md-2">Name</div>
+    <div class="col-md-2">{{ 'email' | uppercase }}</div>
+    <div class="col-md-2">last sign in</div>
+    <div class="col-md-2">last image upload</div>
+    <div class="col-md-1">T&C</div>
+    <div class="col-md-2">avatar</div>
+</div>
+<div ng-repeat="user in users" class="row list-group-item">
+    <div class="col-md-1">{{ user.id }}</div>
+    <div class="col-md-2">{{ user.name }}</div>
+    <div class="col-md-2">{{ user.email }}</div>
+    <div class="col-md-2">{{ user.last_sign_in }}</div>
+    <div class="col-md-2">{{ user.last_image_upload }}</div>
+    <div class="col-md-1">{{ user.tac_accepted }}</div>
+    <div class="col-md-2">{{ user._avatar.url }}</div>
+</div>

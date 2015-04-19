@@ -13,6 +13,9 @@ class UsersController extends Controller{
         /** @var $users EntityCollection */
         $users = Users::get()->retrieveAll();
 
-        $this->json(array('users' => $users->getAttrs(true)));
+        $this->json(array(
+            'users' => $users->getAttrs(true, false),
+            'totalCount' => count($users),
+        ));
     }
 } 

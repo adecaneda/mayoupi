@@ -15,7 +15,8 @@
         "psr-4": {
             "Library\\": "src/library/",
             "api\\": "src/api/",
-            "Domain\\": "src/Domain/"
+            "Domain\\": "src/Domain/",
+            "controllers\\": "src/controllers/"
         }
     }
 }
