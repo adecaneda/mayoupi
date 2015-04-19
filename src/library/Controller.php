@@ -38,4 +38,17 @@ class Controller {
         $response = new HTTPResponse($view->output($file), $status, 'html');
         $registry->response = $response;
     }
-} 
+
+    /**
+     * @param $name
+     *
+     * @return null
+     */
+    protected function getPost($name)
+    {
+        if (isset($_POST[$name])) {
+            return $_POST[$name];
+        }
+        return null;
+    }
+}

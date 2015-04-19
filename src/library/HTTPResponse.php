@@ -50,7 +50,7 @@ class HTTPResponse {
 
         } else {
             if ($this->type === 'json') {
-                header('Content-type: text/json');
+//                header('Content-type: text/json');
                 $output = json_encode($this->data);
 
             } else {  // html

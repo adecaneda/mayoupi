@@ -76,6 +76,16 @@ class Application {
     {
         $collection = new Router\RouteCollection();
 
+        $collection->attachRoute(new Router\Route('/api/auth/login', array(
+            '_controller' => 'api\AuthController::login',
+            'methods' => 'POST'
+        )));
+
+        $collection->attachRoute(new Router\Route('/api/auth/register', array(
+            '_controller' => 'api\AuthController::register',
+            'methods' => 'POST'
+        )));
+
         $collection->attachRoute(new Router\Route('/api/users', array(
             '_controller' => 'api\UsersController::index',
             'methods' => 'GET'

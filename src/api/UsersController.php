@@ -18,4 +18,4 @@ class UsersController extends Controller{
             'totalCount' => count($users),
         ));
     }
-} 
+}
