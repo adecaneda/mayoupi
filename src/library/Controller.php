@@ -9,10 +9,12 @@ class Controller {
      * Stores the response to be output as a json object.
      *
      * @param $data
+     * @param $status
      */
-    protected function json($data)
+    protected function json($data, $status = 200)
     {
-        Registry::getInstance()->response = json_encode($data);
+        $response = new HTTPResponse($data, $status);
+        Registry::getInstance()->response = $response;
     }
 
     /**
@@ -20,8 +22,9 @@ class Controller {
      *
      * @param $data
      * @param $file
+     * @param $status
      */
-    protected function html($data, $file)
+    protected function html($data, $file, $status = 200)
     {
         /** @var $registry Registry */
         $registry = Registry::getInstance();
@@ -31,6 +34,8 @@ class Controller {
         $view->setBasePath(APPLICATION_PATH . '\\views');
 
         $view->setData($data);
-        $registry->response = $view->output($file);
+
+        $response = new HTTPResponse($view->output($file), $status, 'html');
+        $registry->response = $response;
     }
 } 

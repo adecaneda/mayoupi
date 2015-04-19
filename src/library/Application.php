@@ -61,10 +61,11 @@ class Application {
         $router = $registry->router;
         $router->matchCurrentRequest();
 
+        /** @var $response HTTPResponse */
+        $response = $registry->response;
+
         ob_start();
-
-        echo $registry->response;
-
+        echo $response->build();
         ob_flush();
     }
 
@@ -81,8 +82,7 @@ class Application {
         )));
 
         $collection->attachRoute(new Router\Route('/api/', array(
-            //@todo
-            '_controller' => 'api\UsersController::index',
+            '_controller' => 'api\ErrorController::index',
             'methods' => 'GET'
         )));
 

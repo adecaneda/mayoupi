@@ -141,11 +141,11 @@ class View {
 
         $path = $this->basepath . '\\' . $tpl;
         if (file_exists($path)) {
-            ob_start();
+//            ob_start();
 
-            include($path);
+            return include($path);
 
-            return ob_flush();
+//            return ob_flush();
 
         } else {
             throw new \Exception("Template $path not found");
