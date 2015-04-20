@@ -1,9 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title></title>
-</head>
-<body>
-
-</body>
-</html>
+<section class="row" data-ng-controller="SettingsController">
+    <h3 class="col-md-12 text-center">{{ scope.user.name}}</h3>
+    <div class="col-xs-offset-2 col-xs-8 col-md-offset-5 col-md-2">
+        <form data-ng-submit="submitFile()" class="signin form-horizontal" autocomplete="off">
+            <fieldset>
+                <div class="form-group">
+                    <label for="file">Avatar</label>
+                    <!--<input type="file" id="file" name="file" onchange="angular.element(this).scope().uploadFile(this.files)"/>-->
+                    <input type="file" id="file" name="file" onchange="angular.element(this).scope().uploadFile(this.files)"/>
+                </div>
+                <div data-ng-show="error" class="text-center text-danger">
+                    <strong data-ng-bind="error"></strong>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</section>

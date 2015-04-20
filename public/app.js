@@ -14,25 +14,59 @@ app.service('Authentication', ['$window', function($window) {
 app.config(['$stateProvider',
     function($stateProvider) {
 
-        // Users state routing
-        $stateProvider.
-//            state('profile', {
-//                url: '/settings/profile',
-//                templateUrl: 'users/views/settings/edit-profile.client.view.html'
-//            }).
-//            state('accounts', {
-//                url: '/settings/accounts',
-//                templateUrl: 'users/views/settings/social-accounts.client.view.html'
-//            }).
-            state('signup', {
+        // Send to home if the URL was not found
+        $urlRouterProvider.otherwise("/home");
+
+        $stateProvider
+
+            // routes for the home section
+            .state('home', {
+                url  : '/home',
+                templateUrl : 'partials/home.html'
+            })
+
+            // routes for the admin section
+            .state('admin', {
+                url : '/admin',
+                templateUrl : 'admin/views/admin.html',
+                administration: true
+            })
+            .state('admin.home', {
+                url: '',
+                templateUrl: 'admin/views/admin-home.html'
+            })
+            .state('admin.users', {
+                url: '/users',
+                templateUrl: 'admin/views/admin-users.html',
+                controller: function($scope, $http) {
+                    if (!$scope.users) {
+                        $http({method: 'GET', url: './api/users'}).
+                            success(function(data, status) {
+                                $scope.users = angular.fromJson(data).users;
+                                console.log(data);
+                            }).
+                            error(function(data, status, headers, config) {
+                                $scope.users = [];
+                                $scope.status = status;
+                            });
+                    }
+                }
+            })
+
+            // routes for the user section
+            .state('profile', {
+                url: '/settings/profile',
+                templateUrl: 'users/views/settings/profile.html'
+            })
+            .state('signup', {
                 url: '/signup',
                 templateUrl: 'users/views/authentication/signup.html'
-            }).
-            state('signin', {
+            })
+            .state('signin', {
                 url: '/signin',
                 templateUrl: 'users/views/authentication/signin.html'
-            }).
-            state('signout', {
+            })
+            .state('signout', {
                 url: '/signout',
                 templateUrl: 'users/views/authentication/signout.html'
             });
@@ -140,58 +174,3 @@ app.run(function ($rootScope, $state, Authentication) {
         }
     });
 });
-
-
-
-
-
-
-
-
-// configure our routes
-app.config(function($stateProvider, $urlRouterProvider) {
-
-    // Send to login if the URL was not found
-    $urlRouterProvider.otherwise("/home");
-
-    $stateProvider
-        // route for the home page
-        .state('home', {
-            url  : '/home',
-            templateUrl : 'partials/home.html'
-        });
-
-    $stateProvider
-        // route for the admin page
-        .state('admin', {
-            url : '/admin',
-            templateUrl : 'admin/views/admin.html',
-            administration: true
-        })
-
-        .state('admin.home', {
-            url: '',
-            templateUrl: 'admin/views/admin-home.html'
-        })
-            // nested list with custom controller
-        .state('admin.users', {
-            url: '/users',
-            templateUrl: 'admin/views/admin-users.html',
-            controller: function($scope, $http) {
-                if (!$scope.users) {
-                    $http({method: 'GET', url: './api/users'}).
-                        success(function(data, status) {
-                            $scope.users = angular.fromJson(data).users;
-                            console.log(data);
-                        }).
-                        error(function(data, status, headers, config) {
-                            $scope.users = [];
-                            $scope.status = status;
-                        });
-                }
-            }
-        });
-});
-
-
-
