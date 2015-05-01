@@ -11,8 +11,8 @@ app.service('Authentication', ['$window', function($window) {
 }]);
 
 // Setting up route
-app.config(['$stateProvider',
-    function($stateProvider) {
+app.config(['$stateProvider', '$urlRouterProvider',
+    function($stateProvider, $urlRouterProvider) {
 
         // Send to home if the URL was not found
         $urlRouterProvider.otherwise("/home");
@@ -22,7 +22,7 @@ app.config(['$stateProvider',
             // routes for the home section
             .state('home', {
                 url  : '/home',
-                templateUrl : 'partials/home.html'
+                templateUrl : 'public/home/index.html'
             })
 
             // routes for the admin section
@@ -56,19 +56,19 @@ app.config(['$stateProvider',
             // routes for the user section
             .state('profile', {
                 url: '/settings/profile',
-                templateUrl: 'users/views/settings/profile.html'
+                templateUrl: 'public/users/views/settings/profile.html'
             })
             .state('signup', {
                 url: '/signup',
-                templateUrl: 'users/views/authentication/signup.html'
+                templateUrl: 'public/users/views/authentication/signup.html'
             })
             .state('signin', {
                 url: '/signin',
-                templateUrl: 'users/views/authentication/signin.html'
+                templateUrl: 'public/users/views/authentication/signin.html'
             })
             .state('signout', {
                 url: '/signout',
-                templateUrl: 'users/views/authentication/signout.html'
+                templateUrl: 'public/users/views/authentication/signout.html'
             });
     }
 ]);

@@ -12,7 +12,7 @@
     <!-- JS (load angular, ui-router, and our custom js file) -->
     <script src="http://code.angularjs.org/1.2.13/angular.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.8/angular-ui-router.min.js"></script>
-    <script src="app.js"></script>
+    <script src="public/app.js"></script>
 </head>
 
 <!-- apply our angular app to our site -->
@@ -29,6 +29,9 @@
         </ul>
         <ul class="nav navbar-nav pull-right" data-ng-hide="authentication.user">
             <li><a ui-sref="signin">Sign in</a></li>
+        </ul>
+        <ul class="nav navbar-nav pull-right" data-ng-hide="authentication.user">
+            <li><a ui-sref="signup">Sign up</a></li>
         </ul>
         <ul class="nav navbar-nav pull-right" data-ng-if="authentication.user">
             <li><a ui-sref="signout">Sign out</a></li>
