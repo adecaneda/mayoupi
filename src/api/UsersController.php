@@ -24,4 +24,43 @@ class UsersController extends Controller{
             'totalCount' => count($users),
         ));
     }
+
+    public function uploadAvatar()
+    {
+        if (!$user = Auth::authenticate('header')) {
+            $this->json(array(
+                'error' => 1,
+            ));
+            return;
+        }
+
+        if (empty($_FILES) || empty($_FILES['file'])) {
+            $this->json(array(
+                'error' => 2,
+            ));
+            return;
+        }
+
+        //@todo check type, size, etc..
+
+        $file = $_FILES['file'];
+        $parts = explode('.', basename($file['name']));
+        $srcFileExt = end($parts);
+
+        $targetDir = dirname($_SERVER['SCRIPT_FILENAME']) . '/users/assets/avatars/';
+        $targeFileName = 'avatar_' . $user->getId() . '_' . time() . '.' . $srcFileExt;
+
+        $targetFile = $targetDir . $targeFileName;
+        if (!move_uploaded_file($file['tmp_name'], $targetFile)) {
+            $this->json(array(
+                'error' => 3,
+            ));
+        }
+
+        $user->updateAvatar($targeFileName);
+
+        $this->json(array(
+            'url' => $user->avatar()->get('url'),
+        ));
+    }
 }

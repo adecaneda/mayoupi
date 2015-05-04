@@ -17,31 +17,34 @@ class Auth {
 
     /**
      * @param $strategy
-     * @param $params
+     * @param $params mixed
      *
      * @return User
      */
-    static public function authenticate($strategy, $params)
+    static public function authenticate($strategy, $params = null)
     {
         if ($strategy === 'email') {
             $user = self::authenticateWithEmail($params['email'], $params['password']);
 
+        } else if ($strategy === 'header') {
+            $headers = getallheaders();
+            $user = isset($headers['Authorization'])
+                ? self::authenticate('token', $headers['Authorization'])
+                : null;
+
         } else if ($strategy === 'token') {
-            $user = self::authenticateWithToken($params['email'], $params['password']);
+            $user = self::authenticateWithToken($params);
+
 
         } else {
             $user = null;
         }
 
-        if (!$user) {
+        if (!$user || ($_SESSION['token'] && $user->get('token') !== $_SESSION['token'])) {
             return null;
         }
 
         self::storeInSession($user);
-
-        // update last login date
-        $user->updateLastSignIn();
-        Users::get()->persist($user);
 
         return $user;
     }
@@ -50,7 +53,7 @@ class Auth {
      */
     static public function unauthenticate()
     {
-        $_SESSION['user'] = null;
+        self::storeInSession();
     }
 
     static public function register($params)
@@ -88,8 +91,8 @@ class Auth {
      */
     static public function authenticated()
     {
-        if (isset($_SESSION['user'])) {
-            return Users::get()->retrieve($_SESSION['user']);
+        if (isset($_SESSION['token'])) {
+            return Users::get()->retrieve($_SESSION['token'], 'token');
         }
         return null;
     }
@@ -144,9 +147,9 @@ class Auth {
     static protected function storeInSession($user = null)
     {
         if ($user) {
-            $_SESSION['user'] = $user->get('id');
+            $_SESSION['token'] = $user->get('token');
         } else {
-            $_SESSION['user'] = null;
+            $_SESSION['token'] = null;
         }
 
     }

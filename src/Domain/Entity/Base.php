@@ -22,6 +22,14 @@ class Base implements IEntity {
     }
 
     /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->attrs[$this->getIdentifierField()];
+    }
+
+    /**
      * The default field is 'id'.
      *
      * @return string
@@ -50,7 +58,7 @@ class Base implements IEntity {
             }
         }
 
-        $this->attrs = array_merge($attrs, $this->attrs);
+        $this->attrs = array_merge($this->attrs, $attrs);
     }
 
     /**

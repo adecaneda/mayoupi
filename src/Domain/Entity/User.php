@@ -3,6 +3,7 @@
 namespace Domain\Entity;
 
 use Domain\Repository\Images;
+use Domain\Repository\Users;
 
 class User extends Base {
 
@@ -27,6 +28,7 @@ class User extends Base {
         //@todo improve token generation
         return md5(time());
     }
+
     public function avatar()
     {
         // lazy loading
@@ -35,6 +37,33 @@ class User extends Base {
             $this->avatar = Images::get()->retrieve($this->get('id_image'));
         }
         return $this->avatar;
+    }
+
+    /**
+     * @param $filename
+     */
+    public function updateAvatar($filename)
+    {
+        // change the type to the old 'avatar' to 'old avatar', if any
+        if ($oldAvatar = $this->avatar()) {
+            $oldAvatar->setAttrs(array('type' => 'old_avatar'));
+            Images::get()->persist($oldAvatar);
+        }
+
+        // create the new avatar entity
+        $newAvatar = new Image(array(
+            'id_user' => $this->getId(),
+            'url' => $filename,
+            'type' => 'avatar'
+        ));
+        Images::get()->persist($newAvatar);
+
+        // maintain entity consistency
+        $this->avatar = $newAvatar;
+        $this->attrs['id_image'] = $newAvatar->getId();
+        $this->updateLastImageUpload();
+
+        Users::get()->persist($this);
     }
 
     /**
@@ -80,6 +109,15 @@ class User extends Base {
     {
         $now = new \DateTime();
         $this->attrs['last_sign_in'] = $now->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * Updates the last image upload date
+     */
+    public function updateLastImageUpload()
+    {
+        $now = new \DateTime();
+        $this->attrs['last_image_upload'] = $now->format('Y-m-d H:i:s');
     }
 
     /**

@@ -128,23 +128,6 @@ app.controller('SettingsController', ['$scope', '$http', '$location', '$localSto
                 .error(function() {
                     alert('Error uploading avatar');
                 });
-//            .service('fileUpload', ['$http', function ($http) {
-//                this.uploadFileToUrl = function(file, uploadUrl){
-//                    var fd = new FormData();
-//                    fd.append('file', file);
-//                    $http.post(uploadUrl, fd, {
-//                        transformRequest: angular.identity,
-//                        headers: {'Content-Type': undefined}
-//                    })
-//                        .success(function(){
-//                        })
-//                        .error(function(){
-//                        });
-//                }
-//            }]);
-//            var file = $scope.myFile;
-//            var uploadUrl = 'http://www.example.com/images';
-//            fileUpload.uploadFileToUrl(file, uploadUrl);
         };
     }
 ]);

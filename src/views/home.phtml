@@ -15,6 +15,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.8/angular-ui-router.min.js"></script>
     <script src="public/scripts/ngStorage.min.js"></script>
     <script src="public/app.js"></script>
+    <script src="public/services.js"></script>
+    <script src="public/controllers.js"></script>
 </head>
 
 <!-- apply our angular app to our site -->
@@ -24,7 +26,8 @@
 <div data-ng-controller="HeaderController">
     <nav class="navbar navbar-inverse" role="navigation">
         <ul class="nav navbar-nav">
-            <li><a ui-sref="home">Home</a></li>
+            <li data-ng-if="!authentication.token"><a ui-sref="home">Home</a></li>
+            <li data-ng-if="authentication.token"><a ui-sref="profile">Profile</a></li>
         </ul>
         <ul class="nav navbar-nav">
             <li><a ui-sref="admin" data-ng-if="authentication.isAdmin">Admin</a></li>

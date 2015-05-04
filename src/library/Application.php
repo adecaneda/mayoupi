@@ -106,6 +106,11 @@ class Application {
             'methods' => 'GET'
         )));
 
+        $collection->attachRoute(new Router\Route('/api/users/upload-avatar', array(
+            '_controller' => 'api\UsersController::uploadAvatar',
+            'methods' => 'POST'
+        )));
+
         $collection->attachRoute(new Router\Route('/api/', array(
             '_controller' => 'api\ErrorController::index',
             'methods' => 'GET'

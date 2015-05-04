@@ -165,7 +165,9 @@ class Base {
         if (array_key_exists($idAttr, $attrs)) {
             $parts = array();
             foreach ($attrs as $key => $value) {
-                if ($value === null) {
+                if ($key === $entity->getIdentifierField()) {
+                    continue;
+                } else if ($value === null) {
                     $parts[] = "`$key` = NULL";
                 } else {
                     $parts[] = "`$key` = '$value'";

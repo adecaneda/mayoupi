@@ -2,6 +2,7 @@
 
 namespace api;
 
+use Domain\Repository\Users;
 use Domain\Services\Auth;
 use Library\Controller;
 
@@ -25,8 +26,12 @@ class AuthController extends Controller{
             return;
         }
 
+        // update last login date
+        $user->updateLastSignIn();
+        Users::get()->persist($user);
+
         $this->json(array(
-            'user' => $user->get(),
+            'user' => $user->getWithRelations(),
             'token' => $user->get('token')
         ));
     }
