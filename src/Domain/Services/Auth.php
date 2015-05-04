@@ -24,9 +24,17 @@ class Auth {
     static public function authenticate($strategy, $params)
     {
         if ($strategy === 'email') {
-            $user = self::authenticateByEmail($params['email'], $params['password']);
+            $user = self::authenticateWithEmail($params['email'], $params['password']);
+
+        } else if ($strategy === 'token') {
+            $user = self::authenticateWithToken($params['email'], $params['password']);
+
         } else {
             $user = null;
+        }
+
+        if (!$user) {
+            return null;
         }
 
         self::storeInSession($user);
@@ -101,7 +109,7 @@ class Auth {
      * @param $password
      * @return User
      */
-    static protected function authenticateByEmail($email, $password)
+    static protected function authenticateWithEmail($email, $password)
     {
         /** @var $user User */
         if (!$user = Users::get()->retrieve($email, 'email')) {
@@ -109,6 +117,21 @@ class Auth {
         }
 
         if (!$user->checkPassword($password)) {
+            return null;
+        }
+
+        return $user;
+    }
+
+    /**
+    /**
+     * @param $token
+     * @return User
+     */
+    static protected function authenticateWithToken($token)
+    {
+        /** @var $user User */
+        if (!$user = Users::get()->retrieve($token, 'token')) {
             return null;
         }
 

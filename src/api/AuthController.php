@@ -25,7 +25,25 @@ class AuthController extends Controller{
             return;
         }
 
-        $this->json(array('user' => $user->get()));
+        $this->json(array(
+            'user' => $user->get(),
+            'token' => $user->get('token')
+        ));
+    }
+
+    public function me()
+    {
+        $token = '';
+        if (!$user = Auth::authenticate('token', $token)) {
+            $this->json(array('error' => 2));
+            return;
+        }
+
+        $this->json(array(
+            'user' => $user->get(),
+            'token' => $user->get('token')
+        ));
+
     }
 
     public function logout()
@@ -42,7 +60,10 @@ class AuthController extends Controller{
             return;
         }
 
-        $this->json(array('user' => $user->get()));
+        $this->json(array(
+            'user' => $user->get(),
+            'token' => $user->get('token')
+        ));
     }
 
     public function register()
@@ -59,6 +80,9 @@ class AuthController extends Controller{
             return;
         }
 
-        $this->json(array('user' => $user->get()));
+        $this->json(array(
+            'user' => $user->get(),
+            'token' => $user->get('token')));
     }
+
 }

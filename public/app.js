@@ -1,18 +1,23 @@
 // create the module and name it app
-var app = angular.module('app', ['ui.router']);
-
+var app = angular.module('app', ['ui.router', 'ngStorage']);
 
 // Authentication service for user variables
-app.service('Authentication', ['$window', function($window) {
+app.service('Authentication', ['$localStorage', '$http', function($localStorage, $http) {
     var auth = {
-        user: $window.user
+        user: $localStorage.user,
+        token: $localStorage.token,
+        isAdmin: $localStorage.user && $localStorage.user.role == 'admin'
+    };
+    auth.refresh = function() {
+        auth.user = $localStorage.user;
+        auth.token = $localStorage.token;
     };
     return auth;
 }]);
 
 // Setting up route
-app.config(['$stateProvider', '$urlRouterProvider',
-    function($stateProvider, $urlRouterProvider) {
+app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
+    function($stateProvider, $urlRouterProvider, $httpProvider) {
 
         // Send to home if the URL was not found
         $urlRouterProvider.otherwise("/home");
@@ -28,22 +33,21 @@ app.config(['$stateProvider', '$urlRouterProvider',
             // routes for the admin section
             .state('admin', {
                 url : '/admin',
-                templateUrl : 'admin/views/admin.html',
+                templateUrl : 'public/admin/views/admin.html',
                 administration: true
             })
             .state('admin.home', {
                 url: '',
-                templateUrl: 'admin/views/admin-home.html'
+                templateUrl: 'public/admin/views/admin-home.html'
             })
             .state('admin.users', {
                 url: '/users',
-                templateUrl: 'admin/views/admin-users.html',
+                templateUrl: 'public/admin/views/admin-users.html',
                 controller: function($scope, $http) {
                     if (!$scope.users) {
                         $http({method: 'GET', url: './api/users'}).
                             success(function(data, status) {
                                 $scope.users = angular.fromJson(data).users;
-                                console.log(data);
                             }).
                             error(function(data, status, headers, config) {
                                 $scope.users = [];
@@ -74,17 +78,19 @@ app.config(['$stateProvider', '$urlRouterProvider',
 ]);
 
 // Header controller
-app.controller('HeaderController', ['$scope', 'Authentication',
-    function($scope, Authentication) {
+app.controller('HeaderController', ['$scope', 'Authentication', '$localStorage',
+    function($scope, Authentication, $localStorage) {
         $scope.authentication = Authentication;
 }]);
 
-app.controller('AuthenticationController', ['$scope', '$http', '$location', 'Authentication',
-    function($scope, $http, $location, Authentication) {
+app.controller('AuthenticationController', ['$scope', '$http', '$location', '$localStorage', 'Authentication',
+    function($scope, $http, $location, $localStorage, Authentication) {
         $scope.authentication = Authentication;
 
         // If user is signed in then redirect back home
-        if ($scope.authentication.user) $location.path('/');
+        if ($localStorage.token) {
+            $location.path('/');
+        }
 
         $scope.signup = function() {
             // form validation
@@ -110,7 +116,10 @@ app.controller('AuthenticationController', ['$scope', '$http', '$location', 'Aut
             .success(function(response) {
                 if (response.user) {
                     // If successful we assign the response to the global user model
-                    $scope.authentication.user = response.user;
+                    $localStorage.token = response.token;
+                    $localStorage.user = response.user;
+
+                    Authentication.refresh();
 
                     // And redirect to the index page
                     $location.path('/');
@@ -133,7 +142,11 @@ app.controller('AuthenticationController', ['$scope', '$http', '$location', 'Aut
             }).success(function(response) {
                 // If successful we assign the response to the global user model
                 if (response.user) {
-                    $scope.authentication.user = response.user;
+                    //@todo use $scope.me() for user
+                    $localStorage.token = response.token;
+                    $localStorage.user = response.user;
+
+                    Authentication.refresh();
 
                     // And redirect to the index page
                     $location.path('/');
@@ -146,21 +159,44 @@ app.controller('AuthenticationController', ['$scope', '$http', '$location', 'Aut
                 });
         };
 
+        $scope.me = function() {
+            $http.get('api/auth/me')
+                .success(function(response) {
+                    $localStorage.user = response.user;
+
+                    Authentication.refresh();
+                }.error(function(response){
+                }));
+        };
+
         $scope.signout = function() {
             $http.get('api/auth/logout')
                 .success(function(/*response*/) {
-                    $scope.authentication.user = null;
+                    $localStorage.token = null;
+                    $localStorage.user = null;
+
+                    Authentication.refresh();
 
                     // And redirect to the index page
                     $location.path('/signin');
                 });
-        }
+        };
     }
 ]);
 
-app.run(function ($rootScope, $state, Authentication) {
+app.run(function ($rootScope, $state, $injector, Authentication, $localStorage) {
+
+    $injector.get("$http").defaults.transformRequest = function(data, headersGetter) {
+        if ($localStorage.token) {
+            headersGetter()['Authorization'] = "Bearer " + $localStorage.token;
+        }
+        if (data) {
+            return data;
+        }
+    };
+
     $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
-        if (toState.authenticate && !Authentication.user){
+        if (toState.authenticate && !$localStorage.user){
             // User isn’t authenticated
             $state.transitionTo("signin");
             event.preventDefault();
@@ -173,4 +209,6 @@ app.run(function ($rootScope, $state, Authentication) {
             event.preventDefault();
         }
     });
+
 });
+

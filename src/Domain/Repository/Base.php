@@ -165,7 +165,11 @@ class Base {
         if (array_key_exists($idAttr, $attrs)) {
             $parts = array();
             foreach ($attrs as $key => $value) {
-                $parts[] = "`$key` = '$value'";
+                if ($value === null) {
+                    $parts[] = "`$key` = NULL";
+                } else {
+                    $parts[] = "`$key` = '$value'";
+                }
             }
             $query = "UPDATE `$table` SET " . implode(',', $parts) . "  WHERE `$idAttr` = {$entity->get($idAttr)}";
             $db->query($query);
@@ -174,8 +178,12 @@ class Base {
         } else {
             $keys = $values = array();
             foreach ($attrs as $key => $value) {
+                if ($value === null) {
+                    $values[] = "NULL";
+                } else {
+                    $values[] = "'$value'";
+                }
                 $keys[] = "`$key`";
-                $values[] = "'$value'";
             }
             $query = "INSERT INTO `$table` (" . implode(',', $keys) . ") VALUES (" . implode(',', $values). ")";
             if ($db->query($query)) {

@@ -15,11 +15,18 @@ class User extends Base {
     {
         parent::__construct($params);
 
-        if ($params['password']) {
+        if (!isset($params[$this->getIdentifierField()]) && $params['password']) {
             $this->attrs['password'] = $this->encryptPassword($params['password']);
+
+            $this->attrs['token'] = $this->generateToken();
         }
     }
 
+    protected function generateToken()
+    {
+        //@todo improve token generation
+        return md5(time());
+    }
     public function avatar()
     {
         // lazy loading
