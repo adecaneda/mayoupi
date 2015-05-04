@@ -1,20 +1,6 @@
 // create the module and name it app
 var app = angular.module('app', ['ui.router', 'ngStorage']);
 
-// Authentication service for user variables
-app.service('Authentication', ['$localStorage', '$http', function($localStorage, $http) {
-    var auth = {
-        user: $localStorage.user,
-        token: $localStorage.token,
-        isAdmin: $localStorage.user && $localStorage.user.role == 'admin'
-    };
-    auth.refresh = function() {
-        auth.user = $localStorage.user;
-        auth.token = $localStorage.token;
-    };
-    return auth;
-}]);
-
 // Setting up route
 app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
     function($stateProvider, $urlRouterProvider, $httpProvider) {
@@ -77,123 +63,9 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
     }
 ]);
 
-// Header controller
-app.controller('HeaderController', ['$scope', 'Authentication', '$localStorage',
-    function($scope, Authentication, $localStorage) {
-        $scope.authentication = Authentication;
-}]);
+app.run(function ($rootScope, $state, $injector, Authentication, $localStorage, $http) {
 
-app.controller('AuthenticationController', ['$scope', '$http', '$location', '$localStorage', 'Authentication',
-    function($scope, $http, $location, $localStorage, Authentication) {
-        $scope.authentication = Authentication;
-
-        // If user is signed in then redirect back home
-        if ($localStorage.token) {
-            $location.path('/');
-        }
-
-        $scope.signup = function() {
-            // form validation
-            if (!$scope.formData.name
-                || !$scope.formData.email
-                || !$scope.formData.password
-                || !$scope.formData.tac_accepted
-            ) {
-                $scope.error = 'All fields are mandatory';
-                return;
-            }
-
-            // make the request if form is validated
-            $http({
-                method: 'POST',
-                url: 'api/auth/register',
-                data:  'name=' + $scope.formData.name +
-                        '&email=' + $scope.formData.email +
-                        '&tac_accepted=' + $scope.formData.tac_accepted +
-                        '&password=' + $scope.formData.password,
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-            })
-            .success(function(response) {
-                if (response.user) {
-                    // If successful we assign the response to the global user model
-                    $localStorage.token = response.token;
-                    $localStorage.user = response.user;
-
-                    Authentication.refresh();
-
-                    // And redirect to the index page
-                    $location.path('/');
-                } else {
-                    $scope.error = 'Authentication failed!';
-                }
-            }).error(function(response) {
-                $scope.error = response.message;
-            });
-        };
-
-        $scope.signin = function() {
-            $http({
-                method: 'POST',
-                url: 'api/auth/login',
-                data:  'email=' + $scope.credentials.email +
-                        '&password=' + $scope.credentials.password,
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-
-            }).success(function(response) {
-                // If successful we assign the response to the global user model
-                if (response.user) {
-                    //@todo use $scope.me() for user
-                    $localStorage.token = response.token;
-                    $localStorage.user = response.user;
-
-                    Authentication.refresh();
-
-                    // And redirect to the index page
-                    $location.path('/');
-                } else {
-                    $scope.error = 'Authentication failed!';
-                }
-
-            }).error(function(response) {
-                    $scope.error = response.message;
-                });
-        };
-
-        $scope.me = function() {
-            $http.get('api/auth/me')
-                .success(function(response) {
-                    $localStorage.user = response.user;
-
-                    Authentication.refresh();
-                }.error(function(response){
-                }));
-        };
-
-        $scope.signout = function() {
-            $http.get('api/auth/logout')
-                .success(function(/*response*/) {
-                    $localStorage.token = null;
-                    $localStorage.user = null;
-
-                    Authentication.refresh();
-
-                    // And redirect to the index page
-                    $location.path('/signin');
-                });
-        };
-    }
-]);
-
-app.run(function ($rootScope, $state, $injector, Authentication, $localStorage) {
-
-    $injector.get("$http").defaults.transformRequest = function(data, headersGetter) {
-        if ($localStorage.token) {
-            headersGetter()['Authorization'] = "Bearer " + $localStorage.token;
-        }
-        if (data) {
-            return data;
-        }
-    };
+    $http.defaults.headers.common.Authorization = $localStorage.token;
 
     $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
         if (toState.authenticate && !$localStorage.user){
