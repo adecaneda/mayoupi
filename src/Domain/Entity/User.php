@@ -67,6 +67,14 @@ class User extends Base {
     }
 
     /**
+     * Accept the Terms and Conditions
+     */
+    public function acceptTerms()
+    {
+        $this->attrs['tac_accepted'] = 1;
+    }
+
+    /**
      * Returns the attributes of the entity and its related sub-entities.
      *
      * @return array

@@ -110,8 +110,14 @@ app.controller('AuthenticationController', ['$scope', '$http', '$location', '$lo
 app.controller('SettingsController', ['$scope', '$http', '$location', '$localStorage', 'Authentication',
     function($scope, $http, $location, $localStorage, Authentication) {
         $scope.user = Authentication.user;
+        $scope.formTerms = {};
 
-        $scope.uploadFile = function(files) {
+        /**
+         * Method to upload an avatar.
+         *
+         * @param files
+         */
+        $scope.uploadAvatar = function(files) {
             var fd = new FormData();
             fd.append('file', files[0]);
             $http.post('api/users/upload-avatar', fd, {
@@ -127,6 +133,30 @@ app.controller('SettingsController', ['$scope', '$http', '$location', '$localSto
                 })
                 .error(function() {
                     alert('Error uploading avatar');
+                });
+        };
+
+        /**
+         * Method to accept the Terms and Conditions policy
+         */
+        $scope.acceptTerms = function() {
+            // form validation
+            if ($scope.formTerms.tac_accepted !== true) {
+                $scope.error = 'You must accept the terms';
+                return;
+            }
+
+            $http.post('api/users/accept-terms')
+                .success(function(response) {
+                    if (response.tac_accepted) {
+                        $scope.user.tac_accepted = response.tac_accepted;
+                        $location.path('settings.avatar')
+                    } else {
+                        alert('Error accepting terms and conditions');
+                    }
+                })
+                .error(function() {
+                    alert('Error accepting terms and conditions');
                 });
         };
     }

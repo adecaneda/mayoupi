@@ -43,15 +43,7 @@ class UsersController extends Controller{
 
         //@todo check type, size, etc..
 
-        $file = $_FILES['file'];
-        $parts = explode('.', basename($file['name']));
-        $srcFileExt = end($parts);
-
-        $targetDir = dirname($_SERVER['SCRIPT_FILENAME']) . '/users/assets/avatars/';
-        $targeFileName = 'avatar_' . $user->getId() . '_' . time() . '.' . $srcFileExt;
-
-        $targetFile = $targetDir . $targeFileName;
-        if (!move_uploaded_file($file['tmp_name'], $targetFile)) {
+        if (!$targeFileName = $this->moveUploadedAvatar($user)) {
             $this->json(array(
                 'error' => 3,
             ));
@@ -62,5 +54,45 @@ class UsersController extends Controller{
         $this->json(array(
             'url' => $user->avatar()->get('url'),
         ));
+    }
+
+    public function acceptTerms()
+    {
+        if (!$user = Auth::authenticate('header')) {
+            $this->json(array(
+                'error' => 1,
+            ));
+            return;
+        }
+
+        $user->acceptTerms();
+
+        Users::get()->persist($user);
+
+        $this->json(array(
+            'tac_accepted' => $user->get('tac_accepted'),
+        ));
+    }
+
+    /**
+     * @param $user
+     *
+     * @return string
+     */
+    protected function moveUploadedAvatar($user)
+    {
+        $file = $_FILES['file'];
+        $parts = explode('.', basename($file['name']));
+        $srcFileExt = end($parts);
+
+        $targetDir = dirname($_SERVER['SCRIPT_FILENAME']) . '/users/assets/avatars/';
+        $targeFileName = 'avatar_' . $user->getId() . '_' . time() . '.' . $srcFileExt;
+
+        $targetFile = $targetDir . $targeFileName;
+        if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+            return $targeFileName;
+        } else {
+            return '';
+        }
     }
 }

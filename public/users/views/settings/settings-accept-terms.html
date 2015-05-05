@@ -1,0 +1,20 @@
+<div class="row">
+    <h4 class="col-md-12 text-center">you must first accept our Terms & Conditions</h4>
+</div>
+<div class="row">
+    <form name="form" data-ng-submit="acceptTerms()" class="form-horizontal" autocomplete="off">
+        <fieldset>
+            <div class="form-group">
+                <label class="checkbox-inline">
+                    <input type="checkbox" name="tac_accepted" data-ng-model="formTerms.tac_accepted"> Terms And Conditions
+                </label>
+            </div>
+            <div class="text-center form-group">
+                <button type="submit" class="btn btn-primary">Accept</button>
+            </div>
+            <div data-ng-show="error" class="text-center text-danger">
+                <strong data-ng-bind="error"></strong>
+            </div>
+        </fieldset>
+    </form>
+</div>

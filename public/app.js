@@ -20,7 +20,8 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
             .state('admin', {
                 url : '/admin',
                 templateUrl : 'public/admin/views/admin.html',
-                administration: true
+                administration: true,
+                authenticate: true
             })
             .state('admin.home', {
                 url: '',
@@ -44,9 +45,20 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
             })
 
             // routes for the user section
-            .state('profile', {
-                url: '/settings/profile',
-                templateUrl: 'public/users/views/settings/profile.html'
+            .state('settings', {
+                url: '/settings',
+                templateUrl: 'public/users/views/settings/settings.html',
+                authenticate: true
+            })
+            .state('settings.avatar', {
+                url: '/avatar',
+                templateUrl: 'public/users/views/settings/settings-avatar.html',
+                authenticate: true
+            })
+            .state('settings.accept_terms', {
+                url: '/accept_terms',
+                templateUrl: 'public/users/views/settings/settings-accept-terms.html',
+                authenticate: true
             })
             .state('signup', {
                 url: '/signup',
@@ -58,26 +70,45 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
             })
             .state('signout', {
                 url: '/signout',
-                templateUrl: 'public/users/views/authentication/signout.html'
+                templateUrl: 'public/users/views/authentication/signout.html',
+                authenticate: true
             });
     }
 ]);
 
-app.run(function ($rootScope, $state, $injector, Authentication, $localStorage, $http) {
+app.run(function ($rootScope, $state, $injector, Authentication, $localStorage, $http, $location) {
 
-    $http.defaults.headers.common.Authorization = $localStorage.token;
+//    $http.defaults.headers.common.Authorization = $localStorage.token;
 
     $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
-        if (toState.authenticate && !$localStorage.user){
-            // User isn’t authenticated
-            $state.transitionTo("signin");
+        $http.defaults.headers.common.Authorization = $localStorage.token;
+
+        if (toState.name === 'signout') {
+
+        // restricted area for users
+        } else if (toState.authenticate && !$localStorage.user){
+            // User is not authenticated
+            $state.transitionTo('signin');
             event.preventDefault();
 
+        // user must accept the terms and conditions
+        } else if (Authentication.user
+            && parseInt(Authentication.user.tac_accepted) == 0
+            && toState.name !== 'settings.accept_terms'
+        ) {
+            $state.transitionTo('settings.accept_terms');
+            event.preventDefault();
+
+        // only admin users can access the administration area
         } else if (toState.administration
             && (!Authentication.user || Authentication.user.role != 'admin')
         ) {
-            // User isn’t admin
-            $state.transitionTo("home");
+            // User is not admin
+            event.preventDefault();
+            $state.transitionTo('');
+
+        } else if (toState.name === 'settings') {
+            $state.transitionTo('settings.avatar');
             event.preventDefault();
         }
     });

@@ -1,0 +1,13 @@
+<img class="img-circle" alt="{{user.name}}" width="236" height="236"
+     src="/public/users/assets/avatars/{{user._avatar.url}}">
+<form data-ng-submit="submitFile()" class="signin form-horizontal" autocomplete="off">
+    <fieldset>
+        <div class="form-group">
+            <!--<input type="file" id="file" name="file" onchange="angular.element(this).scope().uploadFile(this.files)"/>-->
+            <input class="btn btn-file center-block" type="file" id="file" name="file" onchange="angular.element(this).scope().uploadAvatar(this.files)"/>
+        </div>
+        <div data-ng-show="error" class="text-center text-danger">
+            <strong data-ng-bind="error"></strong>
+        </div>
+    </fieldset>
+</form>

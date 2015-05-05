@@ -111,6 +111,11 @@ class Application {
             'methods' => 'POST'
         )));
 
+        $collection->attachRoute(new Router\Route('/api/users/accept-terms', array(
+            '_controller' => 'api\UsersController::acceptTerms',
+            'methods' => 'POST'
+        )));
+
         $collection->attachRoute(new Router\Route('/api/', array(
             '_controller' => 'api\ErrorController::index',
             'methods' => 'GET'
