@@ -48,6 +48,11 @@ class Controller {
     {
         if (isset($_POST[$name])) {
             return $_POST[$name];
+        } else {
+            $params = json_decode($GLOBALS['HTTP_RAW_POST_DATA'], true);
+            if (isset($params[$name])) {
+                return $params[$name];
+            }
         }
         return null;
     }

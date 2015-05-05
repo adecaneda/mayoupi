@@ -96,6 +96,11 @@ class Application {
             'methods' => 'POST'
         )));
 
+        $collection->attachRoute(new Router\Route('/api/auth/googleplus', array(
+            '_controller' => 'api\AuthController::googleplus',
+            'methods' => 'POST'
+        )));
+
         $collection->attachRoute(new Router\Route('/api/auth/me', array(
             '_controller' => 'api\AuthController::me',
             'methods' => 'GET'

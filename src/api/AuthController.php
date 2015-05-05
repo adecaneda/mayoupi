@@ -2,6 +2,7 @@
 
 namespace api;
 
+use Domain\Entity\User;
 use Domain\Repository\Users;
 use Domain\Services\Auth;
 use Library\Controller;
@@ -38,14 +39,15 @@ class AuthController extends Controller{
 
     public function me()
     {
-        $token = '';
+        $headers = getallheaders();
+        $token = isset($headers['Authorization']) ? $headers['Authorization'] : null;
         if (!$user = Auth::authenticate('token', $token)) {
             $this->json(array('error' => 2));
             return;
         }
 
         $this->json(array(
-            'user' => $user->get(),
+            'user' => $user->getWithRelations(),
             'token' => $user->get('token')
         ));
 
@@ -90,4 +92,48 @@ class AuthController extends Controller{
             'token' => $user->get('token')));
     }
 
+    /**
+     *
+     */
+    public function googleplus()
+    {
+        $headers = getallheaders();
+        $token = isset($headers['Authorization']) ? $headers['Authorization'] : null;
+        if (!$token) {
+            $this->json(array());
+            return;
+        }
+
+        $name = $this->getPost('name');
+        $email = $this->getPost('email');
+        $googleId = $this->getPost('google_id');
+
+        // existing user..
+        $attrs = array(
+            'name' => $name,
+            'email' => $email,
+            'google_id' => $googleId,
+            'token' => $token
+        );
+
+        // existing user
+        if (!$user = Users::get()->retrieve($email, 'email')) {
+            if (!$user = Users::get()->retrieve($googleId, 'google_id')) {
+                // ..or new user
+                $user = new User(array('role' => 'user'));
+            }
+        }
+
+        // set new token
+        $user->setAttrs($attrs);
+
+        // update last sign-in date
+        $user->updateLastSignIn();
+
+        Users::get()->persist($user);
+
+        $this->json(array(
+            'user' => $user->get(),
+            'token' => $user->get('token')));
+    }
 }

@@ -52,6 +52,7 @@ class UsersController extends Controller{
         $user->updateAvatar($targeFileName);
 
         $this->json(array(
+            'user' => $user->getWithRelations(),
             'url' => $user->avatar()->get('url'),
         ));
     }

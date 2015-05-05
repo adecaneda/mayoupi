@@ -92,6 +92,8 @@ app.controller('AuthenticationController', ['$scope', '$http', '$location', '$lo
         };
 
         $scope.signout = function() {
+            gapi.auth.signOut();
+
             $http.get('api/auth/logout')
                 .success(function(/*response*/) {
                     $localStorage.token = null;
@@ -103,8 +105,106 @@ app.controller('AuthenticationController', ['$scope', '$http', '$location', '$lo
                     $location.path('/signin');
                 });
         };
+
+
     }
 ]);
+
+app.controller('GooglePlusController', ['$scope', '$http', '$localStorage', 'Authentication', '$location',
+    function($scope, $http, $localStorage, Authentication, $location) {
+        // Process user info.
+        // userInfo is a JSON object.
+        $scope.processUserInfo = function(userInfo) {
+            var fd = {
+                'google_id': userInfo['id'],
+                'name': userInfo['displayName'],
+                'email': userInfo['emails'][0]['value']
+            };
+
+            $http.defaults.headers.common.Authorization = $localStorage.token;
+
+            $http.post('api/auth/googleplus', fd )
+                .success(function(response) {
+                    $localStorage.user = response.user;
+
+                    Authentication.refresh();
+
+                    $location.path('settings');
+                })
+                .error(function() {
+                    $localStorage.token = null;
+
+                    Authentication.refresh();
+                });
+        };
+
+        // When callback is received, process user info.
+        $scope.userInfoCallback = function(userInfo) {
+            $scope.$apply(function() {
+                $scope.processUserInfo(userInfo);
+            });
+        };
+
+        // Request user info.
+        $scope.getUserInfo = function() {
+            gapi.client.request(
+                {
+                    'path':'/plus/v1/people/me',
+                    'method':'GET',
+                    'callback': $scope.userInfoCallback
+                }
+            );
+        };
+
+        // Here we do the authentication processing and error handling.
+        // Note that authResult is a JSON object.
+        $scope.processAuth = function(authResult) {
+            // Do a check if authentication has been successful.
+            if (authResult['access_token']) {
+                // Successful sign in.
+                $scope.signedIn = true;
+
+                $localStorage.token = authResult['access_token'];
+
+                $scope.getUserInfo();
+
+            } else if (authResult['error']) {
+                // Error while signing in.
+                $scope.signedIn = false;
+
+                // Report error.
+            }
+        };
+
+        // When callback is received, we need to process authentication.
+        $scope.signInCallback = function(authResult) {
+            $scope.$apply(function() {
+                $scope.processAuth(authResult);
+            });
+        };
+
+        // Render the sign in button.
+        $scope.renderSignInButton = function() {
+            gapi.signin.render('signInButton',
+                {
+                    'callback': $scope.signInCallback, // Function handling the callback.
+                    'clientid': '800905310607-si9c22qkj0k5g226g5a8868rcff029tu.apps.googleusercontent.com', // CLIENT_ID from developer console which has been explained earlier.
+                    'requestvisibleactions': '', // Visible actions, scope and cookie policy wont be described now,
+                    // as their explanation is available in Google+ API Documentation.
+                    'scope': 'https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/userinfo.email',
+                    'cookiepolicy': 'single_host_origin'
+                }
+            );
+        };
+
+        // Start function in this example only renders the sign in button.
+        $scope.start = function() {
+            $scope.renderSignInButton();
+        };
+
+        // Call start function on load.
+        $scope.start();
+}]);
 
 // User settings controller
 app.controller('SettingsController', ['$scope', '$http', '$location', '$localStorage', 'Authentication',
@@ -125,8 +225,10 @@ app.controller('SettingsController', ['$scope', '$http', '$location', '$localSto
                     headers: {'Content-Type': undefined}
                 })
                 .success(function(response) {
-                    if (response.url) {
-                        $scope.user._avatar.url = response.url;
+                    if (response.user) {
+                        $scope.user = response.user;
+                        $localStorage.user = $scope.user;
+                        Authentication.refresh();
                     } else {
                         alert('Error uploading avatar');
                     }

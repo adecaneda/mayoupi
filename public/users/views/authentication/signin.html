@@ -1,9 +1,20 @@
 <section class="row" data-ng-controller="AuthenticationController">
     <h3 class="col-md-12 text-center">Sign in using your social accounts</h3>
-    <div class="col-md-12 text-center">
-        <a href="/auth/google" class="undecorated-link">
-            <img src="public/users/assets/google.png">
-        </a>
+    <div class="col-md-12 text-center" data-ng-controller="GooglePlusController">
+        <span id="googleSignIn">
+            <span id="signInButton"></span>
+        </span>
+        <script>// <![CDATA[
+        (function() {
+            var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+            po.src = 'https://apis.google.com/js/client:plusone.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+        })();
+        // ]]></script>
+
+        <!--<a href="/auth/google" class="undecorated-link">-->
+            <!--<img src="public/users/assets/google.png">-->
+        <!--</a>-->
         <a href="/auth/instagram" class="undecorated-link">
             <img src="public/users/assets/instagram.jpg">
         </a>

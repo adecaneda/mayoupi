@@ -78,8 +78,6 @@ app.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 
 app.run(function ($rootScope, $state, $injector, Authentication, $localStorage, $http, $location) {
 
-//    $http.defaults.headers.common.Authorization = $localStorage.token;
-
     $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
         $http.defaults.headers.common.Authorization = $localStorage.token;
 

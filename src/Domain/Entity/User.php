@@ -16,7 +16,7 @@ class User extends Base {
     {
         parent::__construct($params);
 
-        if (!isset($params[$this->getIdentifierField()]) && $params['password']) {
+        if (!isset($params[$this->getIdentifierField()]) && isset($params['password'])) {
             $this->attrs['password'] = $this->encryptPassword($params['password']);
 
             $this->attrs['token'] = $this->generateToken();
